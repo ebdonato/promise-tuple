@@ -200,3 +200,129 @@ test("promiseTuple - Default type parameters", async () => {
     assert.equal(error, undefined)
     assert.equal(result, 42)
 })
+
+test("promiseTuple - Success callback is called on resolution", async () => {
+    let callbackCalled = false
+    const successCallback = () => {
+        callbackCalled = true
+    }
+
+    const [error, result] = await promiseTuple(Promise.resolve("success"), successCallback)
+    assert.equal(callbackCalled, true)
+    assert.equal(error, undefined)
+    assert.equal(result, "success")
+})
+
+test("promiseTuple - Failure callback is called on rejection", async () => {
+    let callbackCalled = false
+    const failureCallback = () => {
+        callbackCalled = true
+    }
+
+    const testError = new Error("test error")
+    const [error, result] = await promiseTuple(Promise.reject(testError), undefined, failureCallback)
+    assert.equal(callbackCalled, true)
+    assert.equal(error, testError)
+    assert.equal(result, undefined)
+})
+
+test("promiseTuple - Both callbacks with success", async () => {
+    let successCalled = false
+    let failureCalled = false
+
+    const successCallback = () => {
+        successCalled = true
+    }
+    const failureCallback = () => {
+        failureCalled = true
+    }
+
+    const [error, result] = await promiseTuple(Promise.resolve("success"), successCallback, failureCallback)
+    assert.equal(successCalled, true)
+    assert.equal(failureCalled, false)
+    assert.equal(error, undefined)
+    assert.equal(result, "success")
+})
+
+test("promiseTuple - Both callbacks with failure", async () => {
+    let successCalled = false
+    let failureCalled = false
+
+    const successCallback = () => {
+        successCalled = true
+    }
+    const failureCallback = () => {
+        failureCalled = true
+    }
+
+    const testError = new Error("test error")
+    const [error, result] = await promiseTuple(Promise.reject(testError), successCallback, failureCallback)
+    assert.equal(successCalled, false)
+    assert.equal(failureCalled, true)
+    assert.equal(error, testError)
+    assert.equal(result, undefined)
+})
+
+test("promiseTuple - Success callback with complex result", async () => {
+    const expectedData = {id: 1, name: "Alice", active: true}
+    let callbackData: unknown
+    const successCallback = () => {
+        callbackData = expectedData
+    }
+
+    const [error, result] = await promiseTuple(Promise.resolve(expectedData), successCallback)
+    assert.equal(error, undefined)
+    assert.deepEqual(result, expectedData)
+    assert.deepEqual(callbackData, expectedData)
+})
+
+test("promiseTuple - Failure callback with custom error", async () => {
+    const customError = {code: "ERR_500", message: "Internal Server Error"}
+    let errorCaptured: unknown
+
+    const failureCallback = () => {
+        errorCaptured = customError
+    }
+
+    const [error, result] = await promiseTuple(Promise.reject(customError), undefined, failureCallback)
+    assert.deepEqual(error, customError)
+    assert.equal(result, undefined)
+    assert.deepEqual(errorCaptured, customError)
+})
+
+test("promiseTuple - Callback with async operation", async () => {
+    let sideEffectValue = 0
+
+    const successCallback = () => {
+        sideEffectValue = 42
+    }
+
+    const [error, result] = await promiseTuple(Promise.resolve(10), successCallback)
+    assert.equal(sideEffectValue, 42)
+    assert.equal(error, undefined)
+    assert.equal(result, 10)
+})
+
+test("promiseTuple - Success callback with null result", async () => {
+    let callbackInvoked = false
+    const successCallback = () => {
+        callbackInvoked = true
+    }
+
+    const [error, result] = await promiseTuple(Promise.resolve(null), successCallback)
+    assert.equal(callbackInvoked, true)
+    assert.equal(error, undefined)
+    assert.equal(result, null)
+})
+
+test("promiseTuple - Failure callback with string error", async () => {
+    let callbackInvoked = false
+    const failureCallback = () => {
+        callbackInvoked = true
+    }
+
+    const [error, result] = await promiseTuple(Promise.reject("string error"), undefined, failureCallback)
+    assert.equal(callbackInvoked, true)
+    assert.equal(error, "string error")
+    assert.equal(result, undefined)
+})

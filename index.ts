@@ -8,7 +8,11 @@
  * @template R - The type of the resolved value. Defaults to `unknown`.
  * @template E - The type of the error. Defaults to `unknown`.
  * @param promise - The promise to handle.
+ * @param successCallback - Optional callback to execute when the promise resolves successfully.
+ * @param failureCallback - Optional callback to execute when the promise rejects.
  * @returns A promise that resolves to a tuple containing either an error or a result.
+ *          On success: `[undefined, result]`
+ *          On failure: `[error, undefined]`
  *
  * @example
  * const [error, data] = await promiseTuple(fetchData());
@@ -17,12 +21,22 @@
  * } else {
  *   console.log('Data:', data);
  * }
+ *
+ * @example
+ * const [error, data] = await promiseTuple(
+ *   fetchData(),
+ *   () => console.log('Success!'),
+ *   () => console.log('Failed!')
+ * );
  */
 export async function promiseTuple<R = unknown, E = unknown>(
-    promise: Promise<R>
+    promise: Promise<R>,
+    successCallback?: () => void,
+    failureCallback?: () => void
 ): Promise<[E | undefined, R | undefined]> {
     return promise
-        .then((result) => [undefined, result] as [undefined, R])
-        .catch((error) => [error, undefined] as [E, undefined])
+        .then((result) => (successCallback?.(), [undefined, result] as [undefined, R]))
+        .catch((error) => (failureCallback?.(), [error, undefined] as [E, undefined]))
 }
+
 export default promiseTuple

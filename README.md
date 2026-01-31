@@ -121,15 +121,51 @@ const [error, data] = await promiseTuple<string, CustomError>(
 );
 ```
 
+### With Callbacks
+
+You can optionally provide success and failure callbacks:
+
+```typescript
+import promiseTuple from 'promise-tuple';
+
+const [error, data] = await promiseTuple(
+  fetch('/api/data'),
+  () => console.log('Request succeeded!'),
+  () => console.log('Request failed!')
+);
+```
+
+Only the appropriate callback will be executed:
+
+```typescript
+import promiseTuple from 'promise-tuple';
+
+const [error, data] = await promiseTuple(
+  someAsyncOperation(),
+  () => {
+    // This runs on success
+    console.log('Operation completed successfully');
+    sendAnalytics('success');
+  },
+  () => {
+    // This runs on failure
+    console.error('Operation failed');
+    sendAnalytics('failure');
+  }
+);
+```
+
 ## API
 
-### `promiseTuple<R, E>(promise)`
+### `promiseTuple<R, E>(promise, successCallback?, failureCallback?)`
 
 Handles a promise and returns a tuple with error and result.
 
 **Parameters:**
 
 - `promise: Promise<R>` - The promise to handle
+- `successCallback?: () => void` - Optional callback executed when the promise resolves
+- `failureCallback?: () => void` - Optional callback executed when the promise rejects
 
 **Returns:**
 
@@ -142,8 +178,8 @@ Handles a promise and returns a tuple with error and result.
 
 **Behavior:**
 
-- If the promise resolves: returns `[undefined, result]`
-- If the promise rejects: returns `[error, undefined]`
+- If the promise resolves: returns `[undefined, result]` and executes `successCallback` if provided
+- If the promise rejects: returns `[error, undefined]` and executes `failureCallback` if provided
 
 ## Examples
 
@@ -183,6 +219,35 @@ async function readConfigFile(path: string) {
   }
 
   return JSON.parse(content);
+}
+```
+
+### With Callbacks for Side Effects
+
+```typescript
+import promiseTuple from 'promise-tuple';
+import db from './database';
+
+async function getUserById(id: number) {
+  const [error, user] = await promiseTuple(
+    db.users.findById(id),
+    () => {
+      // Track successful database query
+      console.log(`User ${id} retrieved successfully`);
+      metrics.incrementCounter('db.user.success');
+    },
+    () => {
+      // Track failed database query
+      console.error(`Failed to retrieve user ${id}`);
+      metrics.incrementCounter('db.user.failure');
+    }
+  );
+
+  if (error) {
+    return { success: false, message: 'User not found' };
+  }
+
+  return { success: true, user };
 }
 ```
 
