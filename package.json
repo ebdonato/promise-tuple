@@ -1,6 +1,6 @@
 {
   "name": "promise-tuple",
-  "version": "1.1.2",
+  "version": "1.1.3",
   "description": "A utility function for handling promises with Go-like error handling pattern",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
