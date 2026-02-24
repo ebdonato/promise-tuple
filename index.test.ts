@@ -368,4 +368,200 @@ describe("promiseTuple", () => {
     expect(error).toBe("string error");
     expect(result).toBeUndefined();
   });
+
+  describe("Return Type Validation", () => {
+    test("Return value is an array (tuple) of length 2 on success", async () => {
+      const tuple = await promiseTuple(Promise.resolve("hello"));
+      expect(Array.isArray(tuple)).toBe(true);
+      expect(tuple).toHaveLength(2);
+    });
+
+    test("Return value is an array (tuple) of length 2 on failure", async () => {
+      const tuple = await promiseTuple(Promise.reject(new Error("fail")));
+      expect(Array.isArray(tuple)).toBe(true);
+      expect(tuple).toHaveLength(2);
+    });
+
+    test("Success tuple has undefined error and defined result", async () => {
+      const tuple = await promiseTuple(Promise.resolve(42));
+      const [error, result] = tuple;
+      expect(typeof error).toBe("undefined");
+      expect(typeof result).toBe("number");
+    });
+
+    test("Failure tuple has defined error and undefined result", async () => {
+      const tuple = await promiseTuple(Promise.reject(new Error("some error")));
+      const [error, result] = tuple;
+      expect(typeof error).toBe("object");
+      expect(error).toBeInstanceOf(Error);
+      expect(typeof result).toBe("undefined");
+    });
+
+    test("Result type is string when promise resolves with string", async () => {
+      const [, result] = await promiseTuple(Promise.resolve("text"));
+      expect(typeof result).toBe("string");
+    });
+
+    test("Result type is number when promise resolves with number", async () => {
+      const [, result] = await promiseTuple(Promise.resolve(3.14));
+      expect(typeof result).toBe("number");
+    });
+
+    test("Result type is boolean when promise resolves with boolean", async () => {
+      const [, result] = await promiseTuple(Promise.resolve(true));
+      expect(typeof result).toBe("boolean");
+    });
+
+    test("Result type is object when promise resolves with object", async () => {
+      const [, result] = await promiseTuple(Promise.resolve({ key: "value" }));
+      expect(typeof result).toBe("object");
+      expect(result).not.toBeNull();
+      expect(result).not.toBeUndefined();
+    });
+
+    test("Result type is object (null) when promise resolves with null", async () => {
+      const [, result] = await promiseTuple(Promise.resolve(null));
+      expect(result).toBeNull();
+      // typeof null is "object" in JavaScript
+      expect(typeof result).toBe("object");
+    });
+
+    test("Error type is string when promise rejects with string", async () => {
+      const [error] = await promiseTuple(Promise.reject("error string"));
+      expect(typeof error).toBe("string");
+    });
+
+    test("Error type is number when promise rejects with number", async () => {
+      const [error] = await promiseTuple(Promise.reject(404));
+      expect(typeof error).toBe("number");
+    });
+
+    test("Error type is object when promise rejects with plain object", async () => {
+      const [error] = await promiseTuple(
+        Promise.reject({ code: "ERR", detail: "failure" }),
+      );
+      expect(typeof error).toBe("object");
+      expect(error).toHaveProperty("code");
+      expect(error).toHaveProperty("detail");
+    });
+
+    test("Error is instance of specific Error subclass", async () => {
+      const [error] = await promiseTuple(
+        Promise.reject(new TypeError("bad type")),
+      );
+      expect(error).toBeInstanceOf(TypeError);
+      expect(error).toBeInstanceOf(Error);
+    });
+
+    test("Result preserves array type", async () => {
+      const [error, result] = await promiseTuple(Promise.resolve([1, 2, 3]));
+      expect(error).toBeUndefined();
+      expect(Array.isArray(result)).toBe(true);
+      expect(result).toHaveLength(3);
+    });
+
+    test("Result preserves Date type", async () => {
+      const now = new Date();
+      const [error, result] = await promiseTuple(Promise.resolve(now));
+      expect(error).toBeUndefined();
+      expect(result).toBeInstanceOf(Date);
+      expect(typeof result?.getTime).toBe("function");
+    });
+
+    test("Result preserves Map type", async () => {
+      const map = new Map([["a", 1]]);
+      const [error, result] = await promiseTuple(Promise.resolve(map));
+      expect(error).toBeUndefined();
+      expect(result).toBeInstanceOf(Map);
+      expect(result?.get("a")).toBe(1);
+    });
+
+    test("Result preserves Set type", async () => {
+      const set = new Set([1, 2, 3]);
+      const [error, result] = await promiseTuple(Promise.resolve(set));
+      expect(error).toBeUndefined();
+      expect(result).toBeInstanceOf(Set);
+      expect(result?.size).toBe(3);
+    });
+
+    test("Result preserves RegExp type", async () => {
+      const regex = /test/gi;
+      const [error, result] = await promiseTuple(Promise.resolve(regex));
+      expect(error).toBeUndefined();
+      expect(result).toBeInstanceOf(RegExp);
+    });
+
+    test("Tuple indices are accessible by numeric index", async () => {
+      const tuple = await promiseTuple(Promise.resolve("indexed"));
+      expect(tuple[0]).toBeUndefined();
+      expect(tuple[1]).toBe("indexed");
+
+      const errorTuple = await promiseTuple(Promise.reject(new Error("err")));
+      expect(errorTuple[0]).toBeInstanceOf(Error);
+      expect(errorTuple[1]).toBeUndefined();
+    });
+
+    test("Return type preserves generic type parameter", async () => {
+      interface ApiResponse {
+        status: number;
+        data: { items: string[] };
+      }
+
+      const response: ApiResponse = {
+        status: 200,
+        data: { items: ["a", "b"] },
+      };
+
+      const [error, result] = await promiseTuple<ApiResponse>(
+        Promise.resolve(response),
+      );
+      expect(error).toBeUndefined();
+      expect(result).toBeDefined();
+      expect(typeof result?.status).toBe("number");
+      expect(Array.isArray(result?.data.items)).toBe(true);
+    });
+
+    test("Return type preserves generic error type parameter", async () => {
+      interface ApiError {
+        statusCode: number;
+        message: string;
+      }
+
+      const apiError: ApiError = {
+        statusCode: 500,
+        message: "Internal Server Error",
+      };
+
+      const [error, result] = await promiseTuple<string, ApiError>(
+        Promise.reject(apiError),
+      );
+      expect(result).toBeUndefined();
+      expect(error).toBeDefined();
+      expect(typeof error?.statusCode).toBe("number");
+      expect(typeof error?.message).toBe("string");
+    });
+
+    test("Result type is bigint when promise resolves with bigint", async () => {
+      const [error, result] = await promiseTuple(
+        Promise.resolve(BigInt(9007199254740991)),
+      );
+      expect(error).toBeUndefined();
+      expect(typeof result).toBe("bigint");
+    });
+
+    test("Result type is symbol when promise resolves with symbol", async () => {
+      const sym = Symbol("test-symbol");
+      const [error, result] = await promiseTuple(Promise.resolve(sym));
+      expect(error).toBeUndefined();
+      expect(typeof result).toBe("symbol");
+    });
+
+    test("Result type is function when promise resolves with function", async () => {
+      const fn = () => "hello";
+      const [error, result] = await promiseTuple(Promise.resolve(fn));
+      expect(error).toBeUndefined();
+      expect(typeof result).toBe("function");
+      expect(result?.()).toBe("hello");
+    });
+  });
 });
