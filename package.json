@@ -1,63 +1,64 @@
 {
-    "name": "promise-tuple",
-    "version": "1.1.0",
-    "description": "A utility function for handling promises with Go-like error handling pattern",
-    "main": "./dist/index.cjs",
-    "module": "./dist/index.js",
-    "types": "./dist/index.d.ts",
-    "type": "module",
-    "exports": {
-        ".": {
-            "types": "./dist/index.d.ts",
-            "require": {
-                "types": "./dist/index.d.cts",
-                "default": "./dist/index.cjs"
-            },
-            "import": {
-                "types": "./dist/index.d.ts",
-                "default": "./dist/index.js"
-            }
-        }
-    },
-    "sideEffects": false,
-    "scripts": {
-        "clean": "node -e \"require('fs').rmSync('dist', { recursive: true, force: true })\"",
-        "build": "tsup index.ts",
-        "test": "tsx index.test.ts",
-        "prepublishOnly": "npm run clean && npm run build && npm test"
-    },
-    "keywords": [
-        "promise",
-        "error-handling",
-        "async",
-        "utility",
-        "go-style",
-        "tuple",
-        "await",
-        "typescript"
-    ],
-    "author": "Eduardo DONATO <eduardo.donato@gmail.com>",
-    "license": "ISC",
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/ebdonato/promise-tuple.git"
-    },
-    "bugs": {
-        "url": "https://github.com/ebdonato/promise-tuple/issues"
-    },
-    "homepage": "https://github.com/ebdonato/promise-tuple#readme",
-    "engines": {
-        "node": ">=16"
-    },
-    "files": [
-        "dist",
-        "README.md",
-        "LICENSE"
-    ],
-    "devDependencies": {
-        "@types/node": "^20.0.0",
-        "tsup": "^8.5.1",
-        "tsx": "^4.21.0",
-        "typescript": "^5.9.3"
+  "name": "promise-tuple",
+  "version": "1.1.1",
+  "description": "A utility function for handling promises with Go-like error handling pattern",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      },
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
     }
+  },
+  "sideEffects": false,
+  "scripts": {
+    "clean": "node -e \"require('fs').rmSync('dist', { recursive: true, force: true })\"",
+    "build": "tsup index.ts",
+    "test": "vitest run",
+    "prepublishOnly": "npm run clean && npm run build && npm test"
+  },
+  "keywords": [
+    "promise",
+    "error-handling",
+    "async",
+    "utility",
+    "go-style",
+    "tuple",
+    "await",
+    "typescript"
+  ],
+  "author": "Eduardo DONATO <eduardo.donato@gmail.com>",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ebdonato/promise-tuple.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ebdonato/promise-tuple/issues"
+  },
+  "homepage": "https://github.com/ebdonato/promise-tuple#readme",
+  "engines": {
+    "node": ">=16"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsup": "^8.5.1",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.18"
+  }
 }
