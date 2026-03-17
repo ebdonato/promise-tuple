@@ -53,9 +53,9 @@ import promiseTuple from 'promise-tuple';
 const [error, data] = await promiseTuple(fetch('/api/data'));
 
 if (error) {
-  console.error('Error:', error);
+    console.error('Error:', error);
 } else {
-  console.log('Data:', data);
+    console.log('Data:', data);
 }
 ```
 
@@ -67,18 +67,18 @@ You can specify the type of the resolved value and error:
 import promiseTuple from 'promise-tuple';
 
 interface User {
-  id: number;
-  name: string;
+    id: number;
+    name: string;
 }
 
 const [error, user] = await promiseTuple<User>(
-  fetch('/api/user').then(res => res.json())
+    fetch('/api/user').then((res) => res.json()),
 );
 
 if (error) {
-  console.error('Failed to fetch user:', error);
+    console.error('Failed to fetch user:', error);
 } else {
-  console.log('User:', user?.name);
+    console.log('User:', user?.name);
 }
 ```
 
@@ -86,23 +86,19 @@ if (error) {
 
 ```typescript
 async function getUser(userId: string) {
-  const [error, response] = await promiseTuple(
-    fetch(`/api/users/${userId}`)
-  );
+    const [error, response] = await promiseTuple(fetch(`/api/users/${userId}`));
 
-  if (error) {
-    throw new Error(`Failed to fetch user: ${error}`);
-  }
+    if (error) {
+        throw new Error(`Failed to fetch user: ${error}`);
+    }
 
-  const [parseError, user] = await promiseTuple(
-    response.json()
-  );
+    const [parseError, user] = await promiseTuple(response.json());
 
-  if (parseError) {
-    throw new Error(`Failed to parse user data: ${parseError}`);
-  }
+    if (parseError) {
+        throw new Error(`Failed to parse user data: ${parseError}`);
+    }
 
-  return user;
+    return user;
 }
 ```
 
@@ -112,12 +108,12 @@ async function getUser(userId: string) {
 import promiseTuple from 'promise-tuple';
 
 interface CustomError {
-  code: string;
-  message: string;
+    code: string;
+    message: string;
 }
 
 const [error, data] = await promiseTuple<string, CustomError>(
-  someAsyncOperation()
+    someAsyncOperation(),
 );
 ```
 
@@ -129,9 +125,9 @@ You can optionally provide success and failure callbacks:
 import promiseTuple from 'promise-tuple';
 
 const [error, data] = await promiseTuple(
-  fetch('/api/data'),
-  () => console.log('Request succeeded!'),
-  () => console.log('Request failed!')
+    fetch('/api/data'),
+    () => console.log('Request succeeded!'),
+    () => console.log('Request failed!'),
 );
 ```
 
@@ -141,17 +137,17 @@ Only the appropriate callback will be executed:
 import promiseTuple from 'promise-tuple';
 
 const [error, data] = await promiseTuple(
-  someAsyncOperation(),
-  () => {
-    // This runs on success
-    console.log('Operation completed successfully');
-    sendAnalytics('success');
-  },
-  () => {
-    // This runs on failure
-    console.error('Operation failed');
-    sendAnalytics('failure');
-  }
+    someAsyncOperation(),
+    () => {
+        // This runs on success
+        console.log('Operation completed successfully');
+        sendAnalytics('success');
+    },
+    () => {
+        // This runs on failure
+        console.error('Operation failed');
+        sendAnalytics('failure');
+    },
 );
 ```
 
@@ -190,15 +186,13 @@ import promiseTuple from 'promise-tuple';
 import db from './database';
 
 async function getUserById(id: number) {
-  const [error, user] = await promiseTuple(
-    db.users.findById(id)
-  );
+    const [error, user] = await promiseTuple(db.users.findById(id));
 
-  if (error) {
-    return { success: false, message: 'User not found' };
-  }
+    if (error) {
+        return { success: false, message: 'User not found' };
+    }
 
-  return { success: true, user };
+    return { success: true, user };
 }
 ```
 
@@ -209,16 +203,14 @@ import promiseTuple from 'promise-tuple';
 import fs from 'fs/promises';
 
 async function readConfigFile(path: string) {
-  const [error, content] = await promiseTuple(
-    fs.readFile(path, 'utf-8')
-  );
+    const [error, content] = await promiseTuple(fs.readFile(path, 'utf-8'));
 
-  if (error) {
-    console.error('Failed to read config:', error);
-    return null;
-  }
+    if (error) {
+        console.error('Failed to read config:', error);
+        return null;
+    }
 
-  return JSON.parse(content);
+    return JSON.parse(content);
 }
 ```
 
@@ -229,25 +221,25 @@ import promiseTuple from 'promise-tuple';
 import db from './database';
 
 async function getUserById(id: number) {
-  const [error, user] = await promiseTuple(
-    db.users.findById(id),
-    () => {
-      // Track successful database query
-      console.log(`User ${id} retrieved successfully`);
-      metrics.incrementCounter('db.user.success');
-    },
-    () => {
-      // Track failed database query
-      console.error(`Failed to retrieve user ${id}`);
-      metrics.incrementCounter('db.user.failure');
+    const [error, user] = await promiseTuple(
+        db.users.findById(id),
+        () => {
+            // Track successful database query
+            console.log(`User ${id} retrieved successfully`);
+            metrics.incrementCounter('db.user.success');
+        },
+        () => {
+            // Track failed database query
+            console.error(`Failed to retrieve user ${id}`);
+            metrics.incrementCounter('db.user.failure');
+        },
+    );
+
+    if (error) {
+        return { success: false, message: 'User not found' };
     }
-  );
 
-  if (error) {
-    return { success: false, message: 'User not found' };
-  }
-
-  return { success: true, user };
+    return { success: true, user };
 }
 ```
 

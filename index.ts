@@ -30,17 +30,23 @@
  * );
  */
 export async function promiseTuple<R = unknown, E = unknown>(
-  promise: Promise<R>,
-  successCallback?: () => void,
-  failureCallback?: () => void,
+    promise: Promise<R>,
+    successCallback?: () => void,
+    failureCallback?: () => void,
 ): Promise<[E, undefined] | [undefined, R]> {
-  return promise
-    .then(
-      (result) => (successCallback?.(), [undefined, result] as [undefined, R]),
-    )
-    .catch(
-      (error) => (failureCallback?.(), [error, undefined] as [E, undefined]),
-    );
+    return promise
+        .then(
+            (result) => (
+                successCallback?.(),
+                [undefined, result] as [undefined, R]
+            ),
+        )
+        .catch(
+            (error) => (
+                failureCallback?.(),
+                [error, undefined] as [E, undefined]
+            ),
+        );
 }
 
 export default promiseTuple;
