@@ -33,7 +33,7 @@ export async function promiseTuple<R = unknown, E = unknown>(
     promise: Promise<R>,
     successCallback?: () => void,
     failureCallback?: () => void,
-): Promise<[E, undefined] | [undefined, R]> {
+): Promise<[E & {}, undefined] | [undefined, R]> {
     return promise
         .then(
             (result) => (
@@ -44,7 +44,7 @@ export async function promiseTuple<R = unknown, E = unknown>(
         .catch(
             (error) => (
                 failureCallback?.(),
-                [error, undefined] as [E, undefined]
+                [error, undefined] as [E & {}, undefined]
             ),
         );
 }

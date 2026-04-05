@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'vitest';
+import { describe, expect, expectTypeOf, test } from 'vitest';
 import promiseTuple from './index';
 
 describe('promiseTuple', () => {
@@ -125,6 +125,40 @@ describe('promiseTuple', () => {
         const [error, result] = await promiseTuple<User>(Promise.resolve(user));
         expect(error).toBeUndefined();
         expect(result).toEqual(user);
+    });
+
+    test('Success branch narrows result to R', async () => {
+        interface User {
+            id: number;
+            name: string;
+        }
+
+        const user: User = { id: 1, name: 'Alice' };
+        const [error, result] = await promiseTuple<User>(Promise.resolve(user));
+
+        if (error !== undefined) {
+            throw new Error('Expected promise to resolve successfully');
+        }
+
+        expectTypeOf(result).toEqualTypeOf<User>();
+        expect(result.name).toBe('Alice');
+        expect(error).toBeUndefined();
+    });
+
+    test('Error branch narrows error to E and result to undefined', async () => {
+        const testError = new Error('fail');
+        const [error, result] = await promiseTuple<string, Error>(
+            Promise.reject(testError),
+        );
+
+        if (error === undefined) {
+            throw new Error('Expected promise to reject');
+        }
+
+        expectTypeOf(error).toEqualTypeOf<Error>();
+        expectTypeOf(result).toEqualTypeOf<undefined>();
+        expect(error.message).toBe('fail');
+        expect(result).toBeUndefined();
     });
 
     test('Type inference with Error Generic', async () => {
